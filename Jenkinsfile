@@ -6,13 +6,6 @@ pipeline {
         NEXUS_REPO = credentials('nexus-repo')
     }
     stages {
-        stage('Git pull') {
-            steps {
-                git branch: 'main',
-                credentialsId: 'git-creds',
-                url: 'https://github.com/CloudHight/Pet-Adoption-Application-Github-Repo--EU2.git'
-            }
-        }
         stage('Code Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
