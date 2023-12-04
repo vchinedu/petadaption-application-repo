@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Build Artifact') {
             steps {
-                sh 'mvn clean install'
+                sh 'mvn clean install -DskipTests'
             }
         }
         stage('Build Docker Image') {
@@ -43,21 +43,21 @@ pipeline {
         stage('Deploy to stage') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.1.13 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook stage-trigger.yml"'
+                    sh 'ssh -t -t ec2-user@10.0.1.152 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook stage-env-playbook.yml"'
                 }
             }
         }
-        stage('slack notification') {
-            steps {
-                slackSend channel: 'jenkins-alert',
-                message: 'App deployed to Stage, needs approval to deploy to prod',
-                teamDomain: 'paceu1',
-                tokenCredentialId: 'slack-credentials'
-            }
-        }
+        // stage('slack notification') {
+        //     steps {
+        //         slackSend channel: 'jenkins-alert',
+        //         message: 'App deployed to Stage, needs approval to deploy to prod',
+        //         teamDomain: 'paceu1',
+        //         tokenCredentialId: 'slack-credentials'
+        //     }
+        // }
         stage('Request for Approval') {
             steps {
-                timeout(activity: true, time: 5) {
+                timeout(activity: true, time: 10) {
                     input message: 'Needs Approval ', submitter: 'admin'
                 }
             }
@@ -65,7 +65,7 @@ pipeline {
         stage('Deploy to prod') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.1.13 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook prod-trigger.yml"'
+                    sh 'ssh -t -t ec2-user@10.0.1.152 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook prod-env-playbook.yml"'
                 }
             }
         }
