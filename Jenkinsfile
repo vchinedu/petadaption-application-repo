@@ -47,14 +47,20 @@ pipeline {
                 }
             }
         }
-        // stage('slack notification') {
-        //     steps {
-        //         slackSend channel: 'jenkins-alert',
-        //         message: 'App deployed to Stage, needs approval to deploy to prod',
-        //         teamDomain: 'paceu1',
-        //         tokenCredentialId: 'slack-credentials'
-        //     }
-        // }
+        stage('check stage website availability') {
+            steps {
+                 sh "sleep 180"
+                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://stage.eamanzebuzz.com"
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.eamanzebuzz.com", returnStdout: true).trim()
+                    if (response == "200") {
+                        slackSend(color: 'good', message: "The stage petclinic website is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    } else {
+                        slackSend(color: 'danger', message: "The stage petclinic wordpress website appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    }
+                }
+            }
+        }
         stage('Request for Approval') {
             steps {
                 timeout(activity: true, time: 10) {
@@ -66,6 +72,20 @@ pipeline {
             steps {
                 sshagent(['ansible-key']) {
                     sh 'ssh -t -t ec2-user@15.236.41.219 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook -i /etc/ansible/prod-hosts prod-env-playbook.yml"'
+                }
+            }
+        }
+        stage('check prod website availability') {
+            steps {
+                 sh "sleep 180"
+                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://prod.eamanzebuzz.com"
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://prod.eamanzebuzz.com", returnStdout: true).trim()
+                    if (response == "200") {
+                        slackSend(color: 'good', message: "The prod petclinic website is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    } else {
+                        slackSend(color: 'danger', message: "The prod petclinic wordpress website appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    }
                 }
             }
         }
