@@ -40,7 +40,7 @@ pipeline {
                 groupId: 'Petclinic',
                 nexusUrl: 'nexus.eamanzebuzz.com',
                 nexusVersion: 'nexus3',
-                protocol: 'http',
+                protocol: 'https',
                 repository: 'nexus-repo',
                 version: '1.0'
             }
