@@ -38,7 +38,7 @@ pipeline {
                 type: 'war']],
                 credentialsId: 'nexus-repo',
                 groupId: 'Petclinic',
-                nexusUrl: '35.180.253.155:8081',
+                nexusUrl: 'nexus.eamanzebuzz.com',
                 nexusVersion: 'nexus3',
                 protocol: 'http',
                 repository: 'nexus-repo',
