@@ -30,6 +30,32 @@ pipeline {
                 sh 'docker build -t $NEXUS_REPO/myapp:latest .'
             }
         }
+        stage('Push Artifact to Nexus Repo') {
+            steps {
+                nexusArtifactUploader artifacts: [[artifactId: 'spring-petclinic',
+                classifier: '',
+                file: 'target/spring-petclinic-2.4.2.war',
+                type: 'war']],
+                credentialsId: 'nexus-repo',
+                groupId: 'Petclinic',
+                nexusUrl: '35.180.253.155:8081',
+                nexusVersion: 'nexus3',
+                protocol: 'http',
+                repository: 'nexus-repo',
+                version: '1.0'
+            }
+        }
+        // stage('OWASP FS SCAN') {
+        //     steps {
+        //         dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+        //         dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        //     }
+        // }
+        // stage('TRIVY FS SCAN') {
+        //     steps {
+        //         sh "trivy fs . > trivyfs.txt"
+        //     }
+        // }
         stage('Log into Nexus Repo') {
             steps {
                 sh 'docker login --username $NEXUS_USER --password $NEXUS_PASSWORD $NEXUS_REPO'
@@ -40,10 +66,15 @@ pipeline {
                 sh 'docker push $NEXUS_REPO/myapp:latest'
             }
         }
+        // stage("TRIVY"){
+        //     steps{
+        //         sh "trivy image sreedhar8897/reddit:latest > trivy.txt"
+        //     }
+        // }
         stage('Deploy to stage') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@15.236.41.219 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook -i /etc/ansible/stage-hosts stage-env-playbook.yml"'
+                    sh 'ssh -t -t ec2-user@13.36.237.67 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage-hosts /etc/ansible/stage_playbook.yml"'
                 }
             }
         }
@@ -71,7 +102,7 @@ pipeline {
         stage('Deploy to prod') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@15.236.41.219 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook -i /etc/ansible/prod-hosts prod-env-playbook.yml"'
+                    sh 'ssh -t -t ec2-user@13.36.237.67 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod-hosts /etc/ansible/prod_playbook.yml"'
                 }
             }
         }
