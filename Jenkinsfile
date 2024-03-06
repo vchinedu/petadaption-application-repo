@@ -51,11 +51,11 @@ pipeline {
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
-        // stage('TRIVY FS SCAN') {
-        //     steps {
-        //         sh "trivy fs . > trivyfs.txt"
-        //     }
-        // }
+        stage('TRIVY FS SCAN') {
+            steps {
+                sh "trivy fs . > trivyfs.txt"
+            }
+        }
         stage('Log into Nexus Repo') {
             steps {
                 sh 'docker login --username $NEXUS_USER --password $NEXUS_PASSWORD $NEXUS_REPO'
@@ -66,11 +66,11 @@ pipeline {
                 sh 'docker push $NEXUS_REPO/myapp:latest'
             }
         }
-        // stage("TRIVY"){
-        //     steps{
-        //         sh "trivy image sreedhar8897/reddit:latest > trivy.txt"
-        //     }
-        // }
+        stage("TRIVY"){
+            steps{
+                sh "trivy image $NEXUS_REPO/myapp:latest > trivy.txt"
+            }
+        }
         stage('Deploy to stage') {
             steps {
                 sshagent(['ansible-key']) {
