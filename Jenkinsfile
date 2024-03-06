@@ -36,7 +36,7 @@ pipeline {
                 classifier: '',
                 file: 'target/spring-petclinic-2.4.2.war',
                 type: 'war']],
-                credentialsId: 'nexus-repo',
+                credentialsId: 'nexus-creds',
                 groupId: 'Petclinic',
                 nexusUrl: 'nexus.eamanzebuzz.com',
                 nexusVersion: 'nexus3',
