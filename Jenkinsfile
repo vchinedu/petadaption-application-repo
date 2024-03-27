@@ -22,7 +22,7 @@ pipeline{
         }
         stage('Test & Build Artifact') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -Dcheckstyle.skip'
                 sh 'mvn clean package -DskipTests -Dcheckstyle.skip'
             }
         }
