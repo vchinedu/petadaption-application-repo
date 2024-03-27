@@ -52,5 +52,32 @@ pipeline{
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
+        stage('Trivy fs Scan') {
+            steps {
+                sh "trivy fs . > trivyfs.txt"
+            }
+        }
+        stage('Log Into Nexus Docker Repo') {
+            steps {
+                sh 'docker login --username $NEXUS_USER --password $NEXUS_PASSWORD $NEXUS_REPO'
+            }
+        }
+        stage('Push to Nexus Docker Repo') {
+            steps {
+                sh 'docker push $NEXUS_REPO/petclinicapps'
+            }
+        }
+        stage('Trivy image Scan') {
+            steps {
+                sh "trivy image $NEXUS_REPO/petclinicapps > trivyfs.txt"
+            }
+        }
+        stage('Deploy to stage') {
+            steps {
+                sshagent(['ansible-key']) {
+                    sh 'ssh -t -t ec2-user@10.0.4.121 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage-hosts /etc/ansible/stage-playbook.yml"'
+                }
+            }
+        }
     }
 }
