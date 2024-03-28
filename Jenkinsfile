@@ -20,9 +20,19 @@ pipeline{
                 }
             }
         }
-        stage('Test & Build Artifact') {
+        stage('Dependency Check') {
             steps {
-                sh 'mvn test -Dcheckstyle.skip'
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage('Test Code') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Build Artifact') {
+            steps {
                 sh 'mvn clean package -DskipTests -Dcheckstyle.skip'
             }
         }
@@ -44,12 +54,6 @@ pipeline{
                 protocol: 'https',
                 repository: 'nexus-repo',
                 version: '1.0'
-            }
-        }
-        stage('Dependency Check') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
         stage('Trivy fs Scan') {
@@ -75,9 +79,53 @@ pipeline{
         stage('Deploy to stage') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.4.104 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage-hosts /etc/ansible/stage-playbook.yml"'
+                    sh 'ssh -t -t ec2-user@10.0.4.67 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage-hosts /etc/ansible/stage-playbook.yml"'
+                }
+            }
+        }
+        stage('check stage website availability') {
+            steps {
+                 sh "sleep 90"
+                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://stage.tundeafod.click"
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.tundeafod.click", returnStdout: true).trim()
+                    if (response == "200") {
+                        slackSend(color: 'good', message: "The stage petclinic java application is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    } else {
+                        slackSend(color: 'danger', message: "The stage petclinic java application appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    }
+                }
+            }
+        }
+        stage('Request for Approval') {
+            steps {
+                timeout(activity: true, time: 10) {
+                    input message: 'Needs Approval ', submitter: 'admin'
+                }
+            }
+        }
+        stage('Deploy to prod') {
+            steps {
+                sshagent(['ansible-key']) {
+                    sh 'ssh -t -t ec2-user@10.0.4.67 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod-hosts /etc/ansible/prod-playbook.yml"'
+                }
+            }
+        }
+        stage('check prod website availability') {
+            steps {
+                 sh "sleep 90"
+                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://prod.tundeafod.click"
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://prod.tundeafod.click", returnStdout: true).trim()
+                    if (response == "200") {
+                        slackSend(color: 'good', message: "The prod petclinic java application is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    } else {
+                        slackSend(color: 'danger', message: "The prod petclinic java application appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack')
+                    }
                 }
             }
         }
     }
 }
+    
+
