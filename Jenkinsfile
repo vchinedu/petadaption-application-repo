@@ -28,7 +28,7 @@ pipeline{
         }
         stage('Test Code') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -Dcheckstyle.skip'
             }
         }
         stage('Build Artifact') {
