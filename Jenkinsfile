@@ -33,7 +33,7 @@ pipeline {
                 type: 'war']],
                 credentialsId: 'nexus-creds',
                 groupId: 'Petclinic',
-                nexusUrl: '13.41.184.65:8081',
+                nexusUrl: '3.10.150.146:8081',
                 nexusVersion: 'nexus3',
                 protocol: 'http',
                 repository: 'nexus-repo',
@@ -43,22 +43,21 @@ pipeline {
         stage('Create docker image') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@13.40.123.168 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-image.yml"'
+                    sh 'ssh -t -t ec2-user@18.171.134.204 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-image.yml"'
                 }
             }
         }
         stage('Create container') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@13.40.123.168 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-container.yml"'
+                    sh 'ssh -t -t ec2-user@18.171.134.204 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-container.yml"'
                 }
             }
         }
         stage('Create Slack notification') {
             steps {
-                slackSend channel: 'Cloudhight',
+                slackSend channel: '04th-march-pet-adoption-containerization-project-using-jenkins-pipeline',
                 message: 'Successful application deployment',
-                teamDomain: '04th-march-pet-adoption-containerization-project-using-jenkins-pipeline',
                 tokenCredentialId: 'slack'
             }
         }
