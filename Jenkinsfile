@@ -43,14 +43,14 @@ pipeline {
         stage('Create docker image') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@18.171.134.204 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-image.yml"'
+                    sh 'ssh -t -t ec2-user@3.10.23.135 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-image.yml"'
                 }
             }
         }
         stage('Create container') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@18.171.134.204 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-container.yml"'
+                    sh 'ssh -t -t ec2-user@3.10.23.135 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-container.yml"'
                 }
             }
         }
