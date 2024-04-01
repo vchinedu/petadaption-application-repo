@@ -33,7 +33,7 @@ pipeline {
                 type: 'war']],
                 credentialsId: 'nexus-creds',
                 groupId: 'Petclinic',
-                nexusUrl: '3.10.150.146:8081',
+                nexusUrl: '18.134.17.34:8081',
                 nexusVersion: 'nexus3',
                 protocol: 'http',
                 repository: 'nexus-repo',
@@ -43,14 +43,14 @@ pipeline {
         stage('Create docker image') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@3.10.23.135 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-image.yml"'
+                    sh 'ssh -t -t ec2-user@18.134.241.103 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-image.yml"'
                 }
             }
         }
         stage('Create container') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@3.10.23.135 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-container.yml"'
+                    sh 'ssh -t -t ec2-user@18.134.241.103 -o strictHostKeyChecking=no "ansible-playbook /opt/docker/docker-container.yml"'
                 }
             }
         }
