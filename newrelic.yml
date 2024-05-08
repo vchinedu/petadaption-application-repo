@@ -1,7 +1,7 @@
 common: &default_settings
   # ============================== LICENSE KEY ===============================
   # You must specify the license key associated with your New Relic account.
-  license_key: eu01xxfa24eabe12a78c355a6973ce5b51abNRAL
+  license_key: eu01xx9b06d012a335aad1f169050e68FFFFNRA
   agent_enabled: true
   # Set the name of your application as you'd like it show up in New Relic.
   app_name: pet_adoption
