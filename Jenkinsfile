@@ -1,123 +1,61 @@
 pipeline {
     agent any
-    environment {
-        NEXUS_USER = credentials('nexus-username')
-        NEXUS_PASSWORD = credentials('nexus-password')
-        NEXUS_REPO = credentials('nexus-repo')
-    }
     stages {
-        stage('Code analisys stage') {
+        stage('Code Checkout') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh 'mvn sonar:sonar'
-                }
+                git branch: 'pet-set19',
+                credentialsId: 'git-cred',
+                url: 'https://github.com/CloudHight/usteam.git'
             }
         }
-        stage('Quality gate') {
+        stage('Code Analysis') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true 
-                }
+               withSonarQubeEnv('sonarqube') {
+                  sh "mvn sonar:sonar"
+               }
             }
         }
-        stage('Build artefacts') {
+        stage("Quality Gate") {
             steps {
-                sh 'mvn clean install -DskipTests -Dcheckstyle.skip'
+              timeout(time: 2, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+              }
             }
         }
-        stage('OWASP Dependency Scan') {
+        stage('Build Artifact') {
             steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                sh 'mvn -f pom.xml clean package'
             }
         }
-        stage('Build Docker image') {
-            steps {
-                sh 'docker build -t $NEXUS_REPO/myapp .'
-            }
-        }
-        stage('Push artifacts to nexus-repo') {
+        stage('Push Artifact to Nexus Repo') {
             steps {
                 nexusArtifactUploader artifacts: [[artifactId: 'spring-petclinic',
                 classifier: '',
                 file: 'target/spring-petclinic-2.4.2.war',
                 type: 'war']],
-                credentialsId: 'nexus-creds',
+                credentialsId: 'nexus-cred',
                 groupId: 'Petclinic',
-                nexusUrl: 'nexus.traveldeals.tech',
+                nexusUrl: '13.37.228.208:8081',
                 nexusVersion: 'nexus3',
-                protocol: 'https',
+                protocol: 'http',
                 repository: 'nexus-repo',
                 version: '1.0'
             }
         }
-        stage('Trivy file scan') {
+        stage('Trigger Playbooks on Ansible') {
             steps {
-                sh "trivy fs . > trivyfs.txt"
-            }
+                sshagent (['ansible-key']) {
+                      sh 'ssh -t -t ec2-user@13.38.110.100 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-image.yml"'
+                      sh 'ssh -t -t ec2-user@13.38.110.100 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-container.yml"'
+                      sh 'ssh -t -t ec2-user@13.38.110.100 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/newrelic-container.yml"'
+                  }
+              }
         }
-        stage('Login to Nexus repo') {
+        stage('slack notification') {
             steps {
-                sh 'docker login --username $NEXUS_USER --password $NEXUS_PASSWORD $NEXUS_REPO'
-            }
-        }
-        stage('Push image to Nexus repo') {
-            steps {
-                sh 'docker push $NEXUS_REPO/myapp'
-            }
-        }
-        stage('Trivi image scan') {
-            steps {
-                sh "trivy image $NEXUS_REPO/myapp > trivy.txt"
-            }
-        }
-        stage('Deploy to stage') {
-            steps {
-                sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.3.215 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage_hosts /etc/ansible/deployment.yml"'
-                }
-            }
-        }
-        stage('check stage website availability') {
-            steps {
-                 sh "sleep 90"
-                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://stage.traveldeals.tech"
-                script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.traveldeals.tech", returnStdout: true).trim()
-                    if (response == "200") {
-                        slackSend(color: 'good', message: "The stage petclinic website is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack')
-                    } else {
-                        slackSend(color: 'danger', message: "The stage petclinic wordpress website appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack')
-                    }
-                }
-            }
-        }
-        stage('Request for Approval') {
-            steps {
-                timeout(activity: true, time: 10) {
-                    input message: 'Needs Approval ', submitter: 'admin'
-                }
-            }
-        }
-        stage('Deploy to prod') {
-            steps {
-                sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.3.215 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod_hosts /etc/ansible/deployment.yml"'
-                }
-            }
-        }
-        stage('check prod website availability') {
-            steps {
-                 sh "sleep 90"
-                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://prod.traveldeals.tech"
-                script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://prod.traveldeals.tech", returnStdout: true).trim()
-                    if (response == "200") {
-                        slackSend(color: 'good', message: "The prod petclinic website is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack')
-                    } else {
-                        slackSend(color: 'danger', message: "The prod petclinic wordpress website appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack')
-                    }
-                }
+                slackSend channel: '29th-april-jenkins-pipeline-project-eu-team',
+                message: 'successful application deployment',
+                tokenCredentialId: 'slack'
             }
         }
     }
