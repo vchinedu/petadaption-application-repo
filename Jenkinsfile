@@ -41,7 +41,7 @@ pipeline {
                 type: 'war']],
                 credentialsId: 'nexus-cred',
                 groupId: 'Petclinic',
-                nexusUrl: '13.37.228.208:8081',
+                nexusUrl: '15.237.113.30:8081',
                 nexusVersion: 'nexus3',
                 protocol: 'http',
                 repository: 'nexus-repo',
