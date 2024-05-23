@@ -47,7 +47,7 @@ pipeline{
                 classifier: '',
                 file: 'target/spring-petclinic-2.4.2.war',
                 type: 'war']],
-                credentialsId: 'nexus-cred',
+                credentialsId: 'nexus-creds',
                 groupId: 'Petclinic',
                 nexusUrl: 'nexus.tundeafod.click',
                 nexusVersion: 'nexus3',
