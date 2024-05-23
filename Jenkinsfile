@@ -30,7 +30,7 @@ pipeline {
         }
         stage('Build Artifact') {
             steps {
-                sh 'mvn -f pom.xml clean package -DskipTest -Dcheckstyle.skip'
+                sh 'mvn -f pom.xml clean package -DskipTests -Dcheckstyle.skip'
             }
         }
         stage('Push Artifact to Nexus Repo') {
