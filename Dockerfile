@@ -1,20 +1,34 @@
-# Use an appropriate base image
-FROM tomcat:9.0-jdk8-openjdk-slim
-
-# Copy the WAR file to the webapps directory in Tomcat
-COPY **/*.war /usr/local/tomcat/webapps/
-
-# Set the working directory
+FROM openjdk:8-jre-slim
+FROM ubuntu
+FROM tomcat
+#copy war file on the container
+COPY **/*.war /usr/local/tomcat/webapps
+WORKDIR  /usr/local/tomcat/webapps
+RUN apt update -y && apt install curl -y
 WORKDIR /usr/local/tomcat/webapps
+ENTRYPOINT [ "java", "-jar", "spring-petclinic-2.4.2.war", "--server.port=8080"]
 
-# Update and install any necessary packages
-RUN apt-get update -y && apt-get install -y curl
 
-# Expose the port the application will run on
-EXPOSE 8080
 
-# Set the entrypoint to run the Tomcat server
-ENTRYPOINT ["catalina.sh", "run"]
+
+
+# # Use an appropriate base image
+# FROM tomcat:9.0-jdk8-openjdk-slim
+
+# # Copy the WAR file to the webapps directory in Tomcat
+# COPY **/*.war /usr/local/tomcat/webapps/
+
+# # Set the working directory
+# WORKDIR /usr/local/tomcat/webapps
+
+# # Update and install any necessary packages
+# RUN apt-get update -y && apt-get install -y curl
+
+# # Expose the port the application will run on
+# EXPOSE 8080
+
+# # Set the entrypoint to run the Tomcat server
+# ENTRYPOINT ["catalina.sh", "run"]
 
 
 
