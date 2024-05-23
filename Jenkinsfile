@@ -47,7 +47,7 @@ pipeline{
                 classifier: '',
                 file: 'target/spring-petclinic-2.4.2.war',
                 type: 'war']],
-                credentialsId: 'nexus-creds',
+                credentialsId: 'nexus-cred',
                 groupId: 'Petclinic',
                 nexusUrl: 'nexus.tundeafod.click',
                 nexusVersion: 'nexus3',
@@ -79,7 +79,7 @@ pipeline{
         stage('Deploy to stage') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.4.214 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage-hosts /etc/ansible/stage-playbook.yml"'
+                    sh 'ssh -t -t ec2-user@3.8.194.56 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage-hosts /etc/ansible/stage-playbook.yml"'
                 }
             }
         }
@@ -107,7 +107,7 @@ pipeline{
         stage('Deploy to prod') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.4.214 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod-hosts /etc/ansible/prod-playbook.yml"'
+                    sh 'ssh -t -t ec2-user@3.8.194.56 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod-hosts /etc/ansible/prod-playbook.yml"'
                 }
             }
         }
