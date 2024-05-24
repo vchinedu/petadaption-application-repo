@@ -31,7 +31,6 @@ pipeline {
         stage('Build Artifact') {
             steps {
                 sh 'mvn -f pom.xml clean package -DskipTests -Dcheckstyle.skip'
-                sh 'mvn spring.profiles.active=mysql'
             }
         }
         stage('Push Artifact to Nexus Repo') {
