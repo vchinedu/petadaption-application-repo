@@ -14,8 +14,8 @@ WORKDIR /usr/local/tomcat/webapps
 ADD ./newrelic.yml /usr/local/tomcat/webapps/newrelic/newrelic.yml
 ENTRYPOINT ["java", "-javaagent:/usr/local/tomcat/webapps/newrelic/newrelic.jar", "jar", "spring-petclinic-1.0.war", "--server.port=8080"]
 
-FROM openjdk:8-jre-slim
-WORKDIR /app
-COPY **/*.war /app/app.war
-EXPOSE 8080 
-CMD ["java", "-jar", "app.war"]
+# FROM openjdk:8-jre-slim
+# WORKDIR /app
+# COPY **/*.war /app/app.war
+# EXPOSE 8080 
+# CMD ["java", "-jar", "app.war"]
