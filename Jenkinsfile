@@ -68,7 +68,14 @@ pipeline {
         }
         stage('Trivi image scan') {
             steps {
-                sh "trivy image $NEXUS_REPO/myapp > trivy.txt"
+                sh "trivy --format json image $NEXUS_REPO/myapp > trivy.json"
+                 // Publish Trivy report
+                publishHTML([allowMissing: false,
+                             alwaysLinkToLastBuild: false,
+                             keepAll: true,
+                             reportDir: '',
+                             reportFiles: 'trivy.json',
+                             reportName: 'Trivy Scan Report'])
             }
         }
         stage('Deploy to stage') {
