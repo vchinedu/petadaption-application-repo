@@ -20,15 +20,15 @@ pipeline {
                 }
             }
         }
-        stage('Build artefacts') {
-            steps {
-                sh 'mvn clean install -DskipTests -Dcheckstyle.skip'
-            }
-        }
         stage('OWASP Dependency Scan') {
             steps {
                 dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage('Build artefacts') {
+            steps {
+                sh 'mvn clean install -DskipTests -Dcheckstyle.skip'
             }
         }
         stage('Build Docker image') {
