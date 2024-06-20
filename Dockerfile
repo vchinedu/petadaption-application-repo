@@ -11,7 +11,7 @@ RUN curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/cur
 ENV JAVA_OPTS="$JAVA_OPTS -javaagent:app/newrelic.jar"
 ENV NEW_RELIC_APP_NAME="pet_adoption"
 ENV NEW_RELIC_LOG_FILE_NAME=STDOUT
-ENV NEW_RELIC_LICENCE_KEY="eu01xxfa24eabe12a78c355a6973ce5b51abNRAL"
+ENV NEW_RELIC_LICENCE_KEY="eu01xx9b06d012a335aad1f169050e68FFFFNRAL"
 WORKDIR /usr/local/tomcat/webapps
 ADD ./newrelic.yml /usr/local/tomcat/webapps/newrelic/newrelic.yml
 ENTRYPOINT [ "java", "-javaagent:/usr/local/tomcat/webapps/newrelic/newrelic.jar", "-jar", "spring-petclinic-2.4.2.war", "--server.port=8080"]
