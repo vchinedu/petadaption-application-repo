@@ -81,7 +81,7 @@ pipeline {
         stage('Deploy to stage') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.3.103 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage_hosts /etc/ansible/deployment.yml"'
+                    sh 'ssh -t -t ec2-user@10.0.3.138 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/stage_hosts /etc/ansible/deployment.yml"'
                 }
             }
         }
@@ -109,7 +109,7 @@ pipeline {
         stage('Deploy to prod') {
             steps {
                 sshagent(['ansible-key']) {
-                    sh 'ssh -t -t ec2-user@10.0.3.103 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod_hosts /etc/ansible/deployment.yml"'
+                    sh 'ssh -t -t ec2-user@10.0.3.138 -o strictHostKeyChecking=no "ansible-playbook -i /etc/ansible/prod_hosts /etc/ansible/deployment.yml"'
                 }
             }
         }
