@@ -41,9 +41,9 @@ pipeline {
                 type: 'war']],
                 credentialsId: 'nexus-cred',
                 groupId: 'Petclinic',
-                nexusUrl: 'https://nexus.hullerdata.com',
+                nexusUrl: 'nexus.hullerdata.com',
                 nexusVersion: 'nexus3',
-                protocol: 'http',
+                protocol: 'https',
                 repository: 'nexus-repo',
                 version: '1.0'
             }
