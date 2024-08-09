@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Code Checkout') {
             steps {
-                git branch: 'pet-set19',
+                git branch: 'euteam20',
                 credentialsId: 'git-cred',
                 url: 'https://github.com/CloudHight/usteam.git'
             }
@@ -41,7 +41,7 @@ pipeline {
                 type: 'war']],
                 credentialsId: 'nexus-cred',
                 groupId: 'Petclinic',
-                nexusUrl: '15.237.36.48:8081',
+                nexusUrl: 'https://nexus.hullerdata.com',
                 nexusVersion: 'nexus3',
                 protocol: 'http',
                 repository: 'nexus-repo',
@@ -51,7 +51,7 @@ pipeline {
         stage('Build docker image') {
             steps {
                 sshagent (['ansible-key']) {
-                      sh 'ssh -t -t ec2-user@13.38.39.39 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-image.yml"'
+                      sh 'ssh -t -t ec2-user@18.170.92.49 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-image.yml"'
                   }
               }
         }                
@@ -63,14 +63,14 @@ pipeline {
         stage('Trigger Ansible to deploy app') {
             steps {
                 sshagent (['ansible-key']) {
-                      sh 'ssh -t -t ec2-user@13.38.39.39 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-container.yml"'
-                      sh 'ssh -t -t ec2-user@13.38.39.39 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/newrelic-container.yml"'
+                      sh 'ssh -t -t ec2-user@18.170.92.49 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-container.yml"'
+                      sh 'ssh -t -t ec2-user@18.170.92.49 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/newrelic-container.yml"'
                   }
               }
         }
         stage('slack notification') {
             steps {
-                slackSend channel: '29th-april-jenkins-pipeline-project-eu-team',
+                slackSend channel: '22nd-july-pet-adoption-jenkins-pipeline-project-eu-team',
                 message: 'successful application deployment',
                 tokenCredentialId: 'slack-cred'
             }
