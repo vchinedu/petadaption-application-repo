@@ -27,7 +27,7 @@ RUN apt update -y && apt install curl -y
 RUN curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip && \
     apt-get install unzip -y  && \
     unzip newrelic-java.zip -d  /usr/local/tomcat/webapps
-ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/tomcat/webapps/newrelic/newrelic.jar"
+ENV JAVA_OPTS="$JAVA_OPTS -javaagent:app/newrelic.jar"
 ENV NEW_RELIC_APP_NAME="pet_adoption"
 ENV NEW_RELIC_LOG_FILE_NAME=STDOUT
 ENV NEW_RELIC_LICENCE_KEY="eu01xxfae85afd73865f913ca0f4b4aaFFFFNRAL"
