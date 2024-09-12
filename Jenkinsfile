@@ -89,7 +89,7 @@ pipeline{
                  sh "sleep 90"
                  sh "curl -s -o /dev/null -w \"%{http_code}\" https://stage.hullerdata.com"
                 script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.greatminds.sbs", returnStdout: true).trim()
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.hullerdata.com", returnStdout: true).trim()
                     if (response == "200") {
                         slackSend(color: 'good', message: "The stage petclinic java application is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
                     } else {
@@ -115,7 +115,7 @@ pipeline{
         stage('check prod website availability') {
             steps {
                  sh "sleep 90"
-                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://prod.greatminds.sbs"
+                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://prod.hullerdata.com"
                 script {
                     def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://prod.hullerdata.com", returnStdout: true).trim()
                     if (response == "200") {
