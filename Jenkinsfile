@@ -84,20 +84,20 @@ pipeline{
                 }
             }
         }
-        stage('check stage website availability') {
-            steps {
-                 sh "sleep 90"
-                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://stage.hullerdata.com"
-                script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.hullerdata.com", returnStdout: true).trim()
-                    if (response == "200") {
-                        slackSend(color: 'good', message: "The stage petclinic java application is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
-                    } else {
-                        slackSend(color: 'danger', message: "The stage petclinic java application appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
-                    }
-                }
-            }
-        }
+        // stage('check stage website availability') {
+        //     steps {
+        //          sh "sleep 90"
+        //          sh "curl -s -o /dev/null -w \"%{http_code}\" https://stage.hullerdata.com"
+        //         script {
+        //             def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://stage.hullerdata.com", returnStdout: true).trim()
+        //             if (response == "200") {
+        //                 slackSend(color: 'good', message: "The stage petclinic java application is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
+        //             } else {
+        //                 slackSend(color: 'danger', message: "The stage petclinic java application appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
+        //             }
+        //         }
+        //     }
+        // }
         stage('Request for Approval') {
             steps {
                 timeout(activity: true, time: 10) {
