@@ -3,8 +3,7 @@ pipeline {
     stages {
         stage('Code Checkout') {
             steps {
-                git branch: 'euteam20',
-                credentialsId: 'git-cred',
+                git branch: 'dayteam',
                 url: 'https://github.com/CloudHight/usteam.git'
             }
         }
@@ -20,12 +19,6 @@ pipeline {
               timeout(time: 2, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
               }
-            }
-        }
-        stage('Dependency check') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
         stage('Build Artifact') {
@@ -55,11 +48,7 @@ pipeline {
                   }
               }
         }                
-        stage('Trivy image scan') {
-            steps {
-                sh "trivy image cloudhight/testapp > trivyfs.txt"
-            }             
-        }
+
         stage('Trigger Ansible to deploy app') {
             steps {
                 sshagent (['ansible-key']) {
@@ -67,11 +56,6 @@ pipeline {
                       sh 'ssh -t -t ec2-user@13.41.184.200 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/newrelic-container.yml"'
                   }
               }
-        }
-        stage('slack notification') {
-            steps {
-                slackSend channel: '22nd-july-pet-adoption-jenkins-pipeline-project-eu-team', message: 'Application deploy successfully ', teamDomain: 'Cloudhight', tokenCredentialId: 'slack-cred'
-            }
         }
     }
 }
