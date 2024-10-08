@@ -57,8 +57,7 @@ pipeline {
         }                
         stage('Trivy image scan') {
             steps {
-                sh 'checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id cloudhight/testapp'
-                junit skipPublishingChecks: true, testResults: 'results.xml'
+                sh "trivy image cloudhight/testapp > trivyfs.txt"
             }             
         }
         stage('Trigger Ansible to deploy app') {
