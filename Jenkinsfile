@@ -4,6 +4,7 @@ pipeline {
         stage('Code Checkout') {
             steps {
                 git branch: 'dayteam',
+                credentialsId: 'git-cred',
                 url: 'https://github.com/CloudHight/usteam.git'
             }
         }
@@ -19,6 +20,12 @@ pipeline {
               timeout(time: 2, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
               }
+            }
+        }
+        stage('Dependency check') {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
         stage('Build Artifact') {
@@ -44,18 +51,37 @@ pipeline {
         stage('Build docker image') {
             steps {
                 sshagent (['ansible-key']) {
-                      sh 'ssh -t -t ec2-user@18.170.31.188 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-image.yml"'
+                      sh 'ssh -t -t ec2-user@35.177.161.174 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-image.yml"'
                   }
               }
         }                
-
+        stage('Trivy image scan') {
+            steps {
+                sh 'checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id cloudhight/testapp'
+                junit skipPublishingChecks: true, testResults: 'results.xml'
+            }             
+        }
         stage('Trigger Ansible to deploy app') {
             steps {
                 sshagent (['ansible-key']) {
-                      sh 'ssh -t -t ec2-user@18.170.31.188 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-container.yml"'
-                      sh 'ssh -t -t ec2-user@18.170.31.188 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/newrelic-container.yml"'
+                      sh 'ssh -t -t ec2-user@35.177.161.174 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/docker-container.yml"'
+                      sh 'ssh -t -t ec2-user@35.177.161.174 -o strictHostKeyChecking=no "cd /etc/ansible && ansible-playbook /opt/docker/newrelic-container.yml"'
                   }
               }
+        }
+        stage('Slack notification && website availability') {
+            steps {
+                 sh "sleep 90"
+                 sh "curl -s -o /dev/null -w \"%{http_code}\" https://app.dobetabeta.shop"
+                script {
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" https://app.dobetabeta.shop", returnStdout: true).trim()
+                    if (response == "200") {
+                        slackSend(color: 'good', message: "The petclinic java application is up and running with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
+                    } else {
+                        slackSend(color: 'danger', message: "The petclinic java application appears to be down with HTTP status code ${response}.", tokenCredentialId: 'slack-cred')
+                    }
+                }
+            }
         }
     }
 }
