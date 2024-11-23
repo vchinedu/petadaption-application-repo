@@ -36,11 +36,7 @@ pipeline{
                 sh 'mvn clean package -DskipTests -Dcheckstyle.skip'
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t $NEXUS_REPO/petclinicapps .'
-            }
-        }
+
         stage('Push Artifact to Nexus Repo') {
             steps {
                 nexusArtifactUploader artifacts: [[artifactId: 'spring-petclinic',
@@ -61,7 +57,12 @@ pipeline{
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $NEXUS_REPO/petclinicapps .'
+            }
+        }
+        
         stage('Log Into Nexus Docker Repo') {
             steps {
                 sh 'docker login --username $NEXUS_USER --password $NEXUS_PASSWORD $NEXUS_REPO'
